@@ -8,10 +8,12 @@ def main():
     trainset = pd.read_csv('trainset.txt')
     testset_t = pd.read_csv('testset_t.txt')
     testset_v = pd.read_csv('testset_v.txt')
+    testset_f = pd.read_csv('testset_f.txt')
 
     trainpaths = set_to_path(trainset)
     testpaths_t = set_to_path(testset_t)
     testpaths_v = set_to_path(testset_v)
+    testpaths_f = set_to_path(testset_f)
     
     # Some hacky stuff because pandas sucks sometimes
     line_list = []
@@ -32,27 +34,28 @@ def main():
     trainpaths = np.array(trainpaths).flatten()
     testpaths_t = np.array(testpaths_t).flatten()
     testpaths_v = np.array(testpaths_v).flatten()
+    testpaths_f = np.array(testpaths_f).flatten()
     match_traintest = np.array(match_traintest).flatten()
     
     train_ids = getids(trainpaths, match_traintest)
     testt_ids = getids(testpaths_t, match_traintest)
     testv_ids = getids(testpaths_v, match_traintest)
-
-    print (train_ids, testt_ids, testv_ids)
-
-    print(words)
+    testf_ids = getids(testpaths_f, match_traintest)
 
     # Now print out the files
 
     with open('train_gt.txt', 'w') as f:
         for item in words[train_ids].tolist():
-            f.write(item[0] + ' ' + item[1] + '\n')
+            f.write(item[0] + '\t' + item[1] + '\n')
     with open('testt_gt.txt', 'w') as f:
         for item in words[testt_ids].tolist():
-            f.write(item[0] + ' ' + item[1] + '\n')
+            f.write(item[0] + '\t' + item[1] + '\n')
     with open('testv_gt.txt', 'w') as f:
         for item in words[testv_ids].tolist():
-            f.write(item[0] + ' ' + item[1] + '\n')
+            f.write(item[0] + '\t' + item[1] + '\n')
+    with open('testf_gt.txt', 'w') as f:
+        for item in words[testf_ids].tolist():
+            f.write(item[0] + '\t' + item[1] + '\n')
 
 def getids(paths, match_traintest):
     idxs = [np.nonzero(np.where(match_traintest==x, 1, 0)) for x in paths]
