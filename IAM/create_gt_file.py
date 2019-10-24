@@ -9,12 +9,12 @@ def main():
     testset_t = pd.read_csv('testset_t.txt')
     testset_v = pd.read_csv('testset_v.txt')
     testset_f = pd.read_csv('testset_f.txt')
-
+    '''
     trainpaths = set_to_path(trainset)
     testpaths_t = set_to_path(testset_t)
     testpaths_v = set_to_path(testset_v)
     testpaths_f = set_to_path(testset_f)
-    
+    '''
     # Some hacky stuff because pandas sucks sometimes
     line_list = []
     with open('wordImages/words.txt') as f:
@@ -27,7 +27,7 @@ def main():
     path_pieces = [x.split('-') for x in path_pieces]
     words[:, 0] = path_pieces_to_path(path_pieces)
     
-
+    '''
     match_traintest = []
     match_traintest = [x.split('/')[0] + '/' + x.split('/')[1] + '/'  for x in words[:, 0]]
     
@@ -41,10 +41,19 @@ def main():
     testt_ids = getids(testpaths_t, match_traintest)
     testv_ids = getids(testpaths_v, match_traintest)
     testf_ids = getids(testpaths_f, match_traintest)
-
+    # We are not using any of these IDs now cuz they arent all there. :cry:
+    # Just split the entire words array into train/val and call it a day
+    '''   
+    with open('train_gt.txt', 'w') as f:
+        for item in words[:int(len(words)*.9)].tolist():
+            f.write(item[0] + '\t' + item[1] + '\n')
+    with open('val_gt.txt', 'w') as f:
+        for item in words[int(len(words)*.9):].tolist():
+            f.write(item[0] + '\t' + item[1] + '\n')
+    
     # Now print out the files
 
-    with open('train_gt.txt', 'w') as f:
+    ''' with open('train_gt.txt', 'w') as f:
         for item in words[train_ids].tolist():
             f.write(item[0] + '\t' + item[1] + '\n')
     with open('testt_gt.txt', 'w') as f:
@@ -56,7 +65,7 @@ def main():
     with open('testf_gt.txt', 'w') as f:
         for item in words[testf_ids].tolist():
             f.write(item[0] + '\t' + item[1] + '\n')
-
+    '''
 def getids(paths, match_traintest):
     idxs = [np.nonzero(np.where(match_traintest==x, 1, 0)) for x in paths]
     idxs = np.array(idxs).flatten()
@@ -75,7 +84,8 @@ def word_to_path(labels):
 
 def set_to_path(df):
     vals =list(df.to_numpy().flatten())
-    paths = [x.split('-')[0] + '/'  + x.split(' ')[1] + '/' for x in vals]
+    print(vals)
+    paths = [x.split('-')[0] + '/'  + x.split('-')[1] + '/' for x in vals]
     paths = [x.split(' ')[1] for x in paths]
     return np.array(paths)
     
