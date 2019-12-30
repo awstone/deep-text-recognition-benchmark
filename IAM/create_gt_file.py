@@ -1,11 +1,11 @@
 # File to generate the gtFile needed by the create_lmdb_dataset.py script
 # Format is : /path/to/image.png Transcription
 
-
-# TODO: Figure out how to properly deal with the CSR lines that start with '#'
-#       The images are properly matched by name, but the numbers go out of order
-#       so I will have to sort them somehow
-
+'''
+# TODO: The stupid fucking numbers sometimes start at 01 and other times start at 00 so 
+        I'm gonna have to figure out some way to fix that. I'm so sick of trying to clean
+        up this trash ass dataset.
+'''
 import pandas as pd
 import numpy as np
 import os
@@ -136,7 +136,11 @@ def main():
         for line in lines:
             if line[:4] == 'CSR:':
                 in_csr = True
-            if in_csr and line[:4] != 'CSR:' and line[0] != '\n' and line[0] != '#':
+            # if line[0] == '#' and line[1] == '\n' and name != 'h04-064':
+            #         print(line)
+            #         print(name)
+            #         exit()
+            if in_csr and line[:4] != 'CSR:' and line[0] != '\n':
                 print(name)
                 name_transpath_dict[name][counter] = line
                 counter += 1
@@ -159,10 +163,37 @@ def main():
             test_gt.append((path, path_trans_dict[path]))
         elif on_off_line == 'lineImages':
             online_path_trans_dict.update({path:path_trans_dict[path]})
-            print('Found online data!')
         else:
             train_gt.append((path, path_trans_dict[path]))
     
+    all_online_keys = list(online_path_trans_dict.keys())
+    ordered_online_paths = []
+    prev_name = ''
+    counter = 0
+    for key in all_online_keys:
+        key_words = key.split('/')
+        name = key_words[4][:-6]
+        if name == prev_name:
+            numbered_name = name + format(counter, '02d')
+            counter += 1
+        else:
+            counter = 0
+            numbered_name = name + '00'
+        prev_name = name
+        numbered_name = numbered_name + '.png'
+        lead_path = ''
+        for word in key_words[:-1]:
+            lead_path = lead_path + word + '/'
+        path = lead_path + numbered_name
+        ordered_online_paths.append(path)
+
+    
+    new_online_path_trans_dict = {}
+    for i, trans in enumerate(online_path_trans_dict.values()):
+        new_online_path_trans_dict.update({ordered_online_paths[i]:trans})
+    online_path_trans_dict = new_online_path_trans_dict
+
+
     online_val1 = online_path_trans_dict.keys()
     online_val1 = list(online_val1)[:900]
     online_test = online_path_trans_dict.keys()
